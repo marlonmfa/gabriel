@@ -13,8 +13,11 @@ export async function POST(req: NextRequest) {
       id: nanoid(),
       topic: data.topic,
       goal: data.goal,
+      lifeGoal: data.lifeGoal,
       availableHoursPerDay: data.availableHoursPerDay,
       learnerStyle: data.learnerStyle,
+      urgency: data.urgency,
+      hasADHD: data.hasADHD,
       createdAt: new Date().toISOString(),
     };
 

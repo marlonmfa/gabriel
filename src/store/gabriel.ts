@@ -9,6 +9,8 @@ import type {
   LearningSession,
   ChatMessage,
   QuizTurn,
+  DailyChallenge,
+  EvolutionEntry,
 } from '@/types';
 
 interface GabrielStore {
@@ -19,6 +21,9 @@ interface GabrielStore {
   activeModuleIndex: number;
   activeSession: LearningSession | null;
   quizHistory: QuizTurn[];
+  challenges: DailyChallenge[];
+  evolution: EvolutionEntry[];
+  totalXP: number;
 
   setProfileId: (id: string) => void;
   setProfile: (p: UserProfile) => void;
@@ -29,6 +34,10 @@ interface GabrielStore {
   addMessage: (msg: ChatMessage) => void;
   updateMastery: (concept: string, score: number) => void;
   addQuizTurn: (turn: QuizTurn) => void;
+  setChallenges: (challenges: DailyChallenge[]) => void;
+  completeChallenge: (challengeId: string) => void;
+  addEvolutionEntry: (entry: EvolutionEntry) => void;
+  addXP: (amount: number) => void;
   reset: () => void;
 }
 
@@ -40,6 +49,9 @@ const initialState = {
   activeModuleIndex: 0,
   activeSession: null,
   quizHistory: [],
+  challenges: [],
+  evolution: [],
+  totalXP: 0,
 };
 
 export const useGabriel = create<GabrielStore>()(
@@ -48,13 +60,9 @@ export const useGabriel = create<GabrielStore>()(
       ...initialState,
 
       setProfileId: (id) => set({ profileId: id }),
-
       setProfile: (p) => set({ userProfile: p }),
-
       setKnowledge: (k) => set({ knowledgeProfile: k }),
-
       setPlan: (p) => set({ studyPlan: p }),
-
       setActiveModuleIndex: (i) => set({ activeModuleIndex: i }),
 
       startSession: (moduleId) =>
@@ -86,10 +94,7 @@ export const useGabriel = create<GabrielStore>()(
           activeSession: state.activeSession
             ? {
                 ...state.activeSession,
-                conceptMastery: {
-                  ...state.activeSession.conceptMastery,
-                  [concept]: score,
-                },
+                conceptMastery: { ...state.activeSession.conceptMastery, [concept]: score },
               }
             : state.activeSession,
         })),
@@ -97,10 +102,25 @@ export const useGabriel = create<GabrielStore>()(
       addQuizTurn: (turn) =>
         set((state) => ({ quizHistory: [...state.quizHistory, turn] })),
 
+      setChallenges: (challenges) => set({ challenges }),
+
+      completeChallenge: (challengeId) =>
+        set((state) => ({
+          challenges: state.challenges.map((c) =>
+            c.id === challengeId
+              ? { ...c, completed: true, completedAt: new Date().toISOString() }
+              : c
+          ),
+        })),
+
+      addEvolutionEntry: (entry) =>
+        set((state) => ({ evolution: [...state.evolution, entry] })),
+
+      addXP: (amount) =>
+        set((state) => ({ totalXP: state.totalXP + amount })),
+
       reset: () => set(initialState),
     }),
-    {
-      name: 'gabriel-session',
-    }
+    { name: 'gabriel-session' }
   )
 );

@@ -1,5 +1,6 @@
-import Anthropic from '@anthropic-ai/sdk';
+import OpenAI from 'openai';
 
-export const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
+// Named 'anthropic' to minimize diffs in existing routes
+export const anthropic = new OpenAI({
+  apiKey: process.env.OPENAI_KEY,
 });

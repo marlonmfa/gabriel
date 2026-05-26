@@ -12,8 +12,11 @@ export async function POST(req: NextRequest) {
     const prompt = buildPlanPrompt({
       topic: data.profile.topic,
       goal: data.profile.goal,
+      lifeGoal: data.profile.lifeGoal,
       availableHoursPerDay: data.profile.availableHoursPerDay,
       learnerStyle: data.profile.learnerStyle,
+      urgency: data.profile.urgency,
+      hasADHD: data.profile.hasADHD,
       gapAreas: data.gapAreas,
       strengthAreas: data.strengthAreas,
     });

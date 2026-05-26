@@ -3,8 +3,11 @@ import { z } from 'zod';
 export const OnboardSchema = z.object({
   topic: z.string().min(1),
   goal: z.string().min(1),
+  lifeGoal: z.string().optional(),
   availableHoursPerDay: z.number().min(0.5).max(12),
-  learnerStyle: z.enum(['visual', 'textual', 'example-based', 'mixed']),
+  learnerStyle: z.enum(['visual', 'textual', 'example-based', 'audio', 'mixed']),
+  urgency: z.enum(['relaxed', 'moderate', 'urgent']).default('moderate'),
+  hasADHD: z.boolean().default(false),
 });
 
 export const QuizSchema = z.object({
@@ -39,8 +42,11 @@ export const PlanSchema = z.object({
   profile: z.object({
     topic: z.string(),
     goal: z.string(),
+    lifeGoal: z.string().optional(),
     availableHoursPerDay: z.number(),
     learnerStyle: z.string(),
+    urgency: z.enum(['relaxed', 'moderate', 'urgent']).optional(),
+    hasADHD: z.boolean().optional(),
   }),
   gapAreas: z.array(z.string()),
   strengthAreas: z.array(z.string()),
@@ -61,14 +67,32 @@ export const TutorSchema = z.object({
   profile: z.object({
     topic: z.string(),
     goal: z.string(),
+    lifeGoal: z.string().optional(),
     learnerStyle: z.string(),
+    urgency: z.enum(['relaxed', 'moderate', 'urgent']).optional(),
+    hasADHD: z.boolean().optional(),
     gapAreas: z.array(z.string()).optional(),
   }),
-  conceptMastery: z.record(z.number()).optional(),
+  conceptMastery: z.record(z.string(), z.number()).optional(),
 });
 
 export const ProgressSchema = z.object({
   profileId: z.string(),
   moduleId: z.string(),
-  conceptMastery: z.record(z.number()),
+  conceptMastery: z.record(z.string(), z.number()),
+  minutesStudied: z.number().optional(),
+});
+
+export const ChallengeSchema = z.object({
+  profileId: z.string(),
+});
+
+export const ChallengeCompleteSchema = z.object({
+  profileId: z.string(),
+  challengeId: z.string(),
+});
+
+export const AudioSummarySchema = z.object({
+  profileId: z.string(),
+  text: z.string().min(1).max(4000),
 });

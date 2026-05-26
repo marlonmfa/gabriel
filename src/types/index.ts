@@ -1,9 +1,15 @@
+export type LearnerStyle = 'visual' | 'textual' | 'example-based' | 'audio' | 'mixed';
+export type UrgencyLevel = 'relaxed' | 'moderate' | 'urgent';
+
 export interface UserProfile {
   id: string;
   topic: string;
   goal: string;
+  lifeGoal?: string;          // career/life ambition — "quero virar analista financeiro"
   availableHoursPerDay: number;
-  learnerStyle: 'visual' | 'textual' | 'example-based' | 'mixed';
+  learnerStyle: LearnerStyle;
+  urgency: UrgencyLevel;
+  hasADHD: boolean;
   createdAt: string;
 }
 
@@ -22,7 +28,7 @@ export interface StudyModule {
   concepts: string[];
   estimatedMinutes: number;
   difficulty: 'foundation' | 'core' | 'advanced';
-  format: 'explanation' | 'examples' | 'practice' | 'visual-walkthrough';
+  format: 'explanation' | 'examples' | 'practice' | 'visual-walkthrough' | 'audio-narrative';
 }
 
 export interface StudyPlan {
@@ -32,6 +38,19 @@ export interface StudyPlan {
   dailyGoalMinutes: number;
   generatedAt: string;
   rawMarkdown: string;
+}
+
+export interface DailyChallenge {
+  id: string;
+  profileId: string;
+  date: string;                 // ISO date YYYY-MM-DD
+  title: string;
+  description: string;
+  concept: string;
+  estimatedMinutes: number;
+  completed: boolean;
+  completedAt?: string;
+  xp: number;
 }
 
 export interface ChatMessage {
@@ -66,10 +85,22 @@ export interface QuizTurn {
   feedbackGiven: string;
 }
 
+export interface EvolutionEntry {
+  date: string;
+  xpEarned: number;
+  conceptsStudied: string[];
+  minutesStudied: number;
+  challengesCompleted: number;
+  sessionsCount: number;
+}
+
 export interface ServerSession {
   profile: UserProfile;
   knowledge?: KnowledgeProfile;
   plan?: StudyPlan;
   activeSession?: LearningSession;
   quizHistory: QuizTurn[];
+  challenges?: DailyChallenge[];
+  evolution?: EvolutionEntry[];
+  totalXP?: number;
 }

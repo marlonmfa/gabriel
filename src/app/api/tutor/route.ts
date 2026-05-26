@@ -12,11 +12,14 @@ export async function POST(req: NextRequest) {
     const systemPrompt = buildTutorSystemPrompt({
       topic: data.profile.topic,
       goal: data.profile.goal,
+      lifeGoal: (data.profile as { lifeGoal?: string }).lifeGoal,
       learnerStyle: data.profile.learnerStyle,
+      urgency: (data.profile as { urgency?: string }).urgency,
+      hasADHD: (data.profile as { hasADHD?: boolean }).hasADHD,
       gapAreas: data.profile.gapAreas ?? [],
       moduleTitle: data.moduleTitle,
       concepts: data.concepts,
-      conceptMastery: data.conceptMastery,
+      conceptMastery: data.conceptMastery as Record<string, number> | undefined,
     });
 
     // Sliding window: last 20 messages to stay within context limits
