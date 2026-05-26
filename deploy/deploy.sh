@@ -52,12 +52,12 @@ else
   git clone https://github.com/marlonmfa/gabriel.git "$APP_DIR"
 fi
 
-# Install dependencies
+# Install dependencies (all deps needed — tailwindcss/typescript are required for build)
 cd "$APP_DIR"
-npm ci --omit=dev
+npm install
 
-# Build
-npm run build
+# Build with webpack (Turbopack has filesystem bugs in CI/VPS environments)
+node_modules/.bin/next build --webpack
 
 echo "✓ Build complete"
 REMOTE_SCRIPT
@@ -66,29 +66,38 @@ REMOTE_SCRIPT
 echo "▶ Uploading .env.local..."
 scp -o StrictHostKeyChecking=no .env.local "$REMOTE:$APP_DIR/.env.local"
 
-# 4. Install systemd service
-echo "▶ Installing systemd service..."
-scp -o StrictHostKeyChecking=no deploy/gabriel.service "$REMOTE:/etc/systemd/system/gabriel.service"
-$SSH bash -s << 'SYSTEMD'
-systemctl daemon-reload
-systemctl enable gabriel
-systemctl restart gabriel
-echo "▶ Service status:"
-systemctl status gabriel --no-pager | head -15
-SYSTEMD
+# 4. Restart via PM2 (process manager already configured with ecosystem.config.js)
+echo "▶ Restarting Gabriel via PM2..."
+$SSH bash -s << 'PM2RESTART'
+cd /var/www/gabriel
+if pm2 list | grep -q gabriel; then
+  pm2 restart gabriel --update-env
+else
+  pm2 start ecosystem.config.js
+fi
+pm2 save
+echo "▶ PM2 status:"
+pm2 show gabriel | head -20
+PM2RESTART
 
-# 5. Install Nginx config
+# 5. Update Nginx port in existing canonical config
 echo "▶ Configuring Nginx..."
-scp -o StrictHostKeyChecking=no deploy/nginx.conf "$REMOTE:/etc/nginx/sites-available/gabriel"
-$SSH bash -s << NGINX
+$SSH bash -s << 'NGINX'
+CONF="/etc/nginx/sites-enabled/gabriel.hirableaiagents.com.conf"
 DOMAIN="gabriel.hirableaiagents.com"
-ln -sf /etc/nginx/sites-available/gabriel /etc/nginx/sites-enabled/gabriel
-rm -f /etc/nginx/sites-enabled/default
+
+# Ensure canonical config points to port 3900
+if [ -f "$CONF" ]; then
+  sed -i 's|proxy_pass http://127.0.0.1:[0-9]*;|proxy_pass http://127.0.0.1:3900;|g' "$CONF"
+fi
+
+# Remove any conflicting gabriel symlink from previous deploys
+rm -f /etc/nginx/sites-enabled/gabriel
 
 # Get SSL cert if not already present
-if [ ! -d "/etc/letsencrypt/live/\$DOMAIN" ]; then
+if [ ! -d "/etc/letsencrypt/live/$DOMAIN" ]; then
   echo "▶ Getting SSL certificate..."
-  certbot certonly --nginx -d "\$DOMAIN" --non-interactive --agree-tos -m marlonmfa@gmail.com
+  certbot certonly --nginx -d "$DOMAIN" --non-interactive --agree-tos -m marlonmfa@gmail.com
 fi
 
 nginx -t && systemctl reload nginx
