@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { TutorSchema } from '@/lib/validators';
 import { anthropic } from '@/lib/anthropic';
-import { anthropicStreamToResponse } from '@/lib/stream-helpers';
+import { openaiStreamToResponse } from '@/lib/stream-helpers';
 import { buildTutorSystemPrompt } from '@/lib/prompts/tutor';
 
 export async function POST(req: NextRequest) {
@@ -22,20 +22,20 @@ export async function POST(req: NextRequest) {
       conceptMastery: data.conceptMastery as Record<string, number> | undefined,
     });
 
-    // Sliding window: last 20 messages to stay within context limits
     const history = data.history.slice(-20);
 
-    const stream = anthropic.messages.stream({
-      model: 'claude-opus-4-5',
+    const stream = await anthropic.chat.completions.create({
+      model: 'gpt-4o',
       max_tokens: 1024,
-      system: systemPrompt,
+      stream: true,
       messages: [
+        { role: 'system', content: systemPrompt },
         ...history,
         { role: 'user', content: data.message },
       ],
     });
 
-    return anthropicStreamToResponse(stream);
+    return openaiStreamToResponse(stream);
   } catch (err) {
     return NextResponse.json(
       { error: 'Tutor failed', detail: String(err) },

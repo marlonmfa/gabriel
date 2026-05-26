@@ -39,17 +39,23 @@ Respond with a JSON array only, no other text:
   }
 ]`;
 
-  const response = await anthropic.messages.create({
-    model: 'claude-haiku-4-5-20251001',
+  const response = await anthropic.chat.completions.create({
+    model: 'gpt-4o-mini',
     max_tokens: 800,
-    messages: [{ role: 'user', content: prompt }],
+    response_format: { type: 'json_object' },
+    messages: [
+      {
+        role: 'system',
+        content: 'You are a tutor that creates daily micro-challenges. Always respond with a JSON object containing a "challenges" array.',
+      },
+      { role: 'user', content: prompt },
+    ],
   });
 
-  const text = (response.content[0] as { text: string }).text.trim();
-  const jsonMatch = text.match(/\[[\s\S]*\]/);
-  if (!jsonMatch) throw new Error('Invalid challenge response');
-
-  const raw = JSON.parse(jsonMatch[0]) as Array<{
+  const raw = response.choices[0]?.message?.content ?? '{}';
+  const parsed = JSON.parse(raw) as { challenges?: Array<{ title: string; description: string; concept: string; estimatedMinutes: number; xp: number }> };
+  const text = JSON.stringify(parsed.challenges ?? parsed);
+  const rawArr = JSON.parse(text) as Array<{
     title: string;
     description: string;
     concept: string;
@@ -57,7 +63,7 @@ Respond with a JSON array only, no other text:
     xp: number;
   }>;
 
-  return raw.map((c) => ({
+  return rawArr.map((c) => ({
     id: nanoid(),
     profileId: '',
     date: today,

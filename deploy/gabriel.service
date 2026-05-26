@@ -1,0 +1,22 @@
+[Unit]
+Description=Gabriel AI Tutor (Next.js)
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/var/www/gabriel
+ExecStart=/usr/bin/node_modules/.bin/next start -p 3000
+# Use npm run start if the above path differs
+# ExecStart=/usr/bin/npm run start
+Restart=on-failure
+RestartSec=5s
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=gabriel
+
+# Load .env.local
+EnvironmentFile=/var/www/gabriel/.env.local
+
+[Install]
+WantedBy=multi-user.target

@@ -137,8 +137,36 @@ export default function PlanPage() {
             <div className="glass rounded-2xl p-5 flex items-center gap-3">
               <Sparkles className="w-5 h-5 text-indigo-400 shrink-0" />
               <p className="text-sm text-slate-400">
-                Total: <span className="text-white font-medium">{studyPlan.modules.reduce((s, m) => s + m.estimatedMinutes, 0)} minutes</span> across <span className="text-white font-medium">{studyPlan.modules.length} modules</span> — designed for {userProfile?.availableHoursPerDay}h/day
+                Total: <span className="text-white font-medium">{studyPlan.modules.reduce((s, m) => s + m.estimatedMinutes, 0)} min</span> em <span className="text-white font-medium">{studyPlan.modules.length} módulos</span> — {userProfile?.availableHoursPerDay}h/dia
               </p>
+            </div>
+
+            {/* Quick nav to challenges and progress */}
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => router.push('/challenges')}
+                className="glass rounded-2xl p-4 flex items-center gap-3 border border-white/10 hover:border-yellow-500/30 transition-all text-left"
+              >
+                <div className="w-9 h-9 rounded-xl bg-yellow-500/10 flex items-center justify-center shrink-0">
+                  <span className="text-lg">⚡</span>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-white">Desafios do dia</p>
+                  <p className="text-xs text-slate-500">Micro-tarefas de 5-15 min</p>
+                </div>
+              </button>
+              <button
+                onClick={() => router.push('/progress')}
+                className="glass rounded-2xl p-4 flex items-center gap-3 border border-white/10 hover:border-indigo-500/30 transition-all text-left"
+              >
+                <div className="w-9 h-9 rounded-xl bg-indigo-500/10 flex items-center justify-center shrink-0">
+                  <span className="text-lg">📈</span>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-white">Minha evolução</p>
+                  <p className="text-xs text-slate-500">XP, nível e progresso</p>
+                </div>
+              </button>
             </div>
           </div>
         ) : (

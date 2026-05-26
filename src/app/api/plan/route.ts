@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PlanSchema } from '@/lib/validators';
 import { anthropic } from '@/lib/anthropic';
-import { anthropicStreamToResponse } from '@/lib/stream-helpers';
+import { openaiStreamToResponse } from '@/lib/stream-helpers';
 import { buildPlanPrompt } from '@/lib/prompts/plan';
 
 export async function POST(req: NextRequest) {
@@ -21,13 +21,14 @@ export async function POST(req: NextRequest) {
       strengthAreas: data.strengthAreas,
     });
 
-    const stream = anthropic.messages.stream({
-      model: 'claude-opus-4-5',
+    const stream = await anthropic.chat.completions.create({
+      model: 'gpt-4o',
       max_tokens: 1500,
+      stream: true,
       messages: [{ role: 'user', content: prompt }],
     });
 
-    return anthropicStreamToResponse(stream);
+    return openaiStreamToResponse(stream);
   } catch (err) {
     return NextResponse.json(
       { error: 'Plan generation failed', detail: String(err) },

@@ -329,6 +329,10 @@ function SessionContent() {
               module={module}
               conceptMastery={conceptMastery}
               messageCount={messages.filter((m) => m.role === 'user').length}
+              lastAssistantMessage={
+                [...messages].reverse().find((m) => m.role === 'assistant' && m.content)?.content
+              }
+              isAudioLearner={userProfile?.learnerStyle === 'audio'}
             />
           </div>
         </div>
